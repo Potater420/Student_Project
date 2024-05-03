@@ -6,7 +6,7 @@ void main()
 {
     int choice_1;                             //variables
     int admin_PW;
-    int PW=1234;
+    static int PW=1234;
     int choice_admin;
     int choice_student;
 
@@ -68,8 +68,8 @@ void main()
                 //All_view();
                 break;
             case 5:
-                printf("Edit Admin Password");
-                //scanf("%d",&PW);
+                printf("Enter new password: ");
+                scanf("%d",&PW);
                 break;
             case 6:
                 printf("Student grade edit");
