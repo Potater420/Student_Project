@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 #define MAX_STUDENTS 100
 FILE *my_file =NULL;
 
@@ -24,7 +23,7 @@ uint32 Get_Length(struct Node *List);
 void read_data(struct Node **List,uint8 *read_data, int *count);
 void print_student(struct Node *List);
 void Display_All_Nodes(struct Node *List);
-void Delete_Node(struct Node *List);
+void Delete_Node(struct Node **List);
 
 
 uint8 data[50];
@@ -37,7 +36,6 @@ int main()
     int linesCount = 0;
     char buffer[1000];
 
-    //ÇÓÊÑÌÇÚ ÇáÈíÇäÇÊ ãä ÇáãáÝ
     uint32 ListLength = 0;
     my_file = fopen("text_fun add.txt","r");
     while (fgets(buffer, sizeof(buffer),  my_file) != NULL)
@@ -74,7 +72,7 @@ int main()
                 Display_All_Nodes(ListHead);
             break;
             case 3:
-                Delete_Node(ListHead);
+                Delete_Node(&ListHead);
             break;
             case 4:
                 printf("Quit from application \n");
@@ -195,12 +193,12 @@ void Display_All_Nodes(struct Node *List)
 
     }
 }
-void Delete_Node(struct Node *List){
+void Delete_Node(struct Node **List){
     uint32 deleted_id=0;
-    struct Node *TempNode = List;
-    struct Node *NodeListCounter = List;
+    struct Node *TempNode = *List;
+    struct Node *NodeListCounter = *List;
     //uint32 NodeCount = 0;
-    struct Node *NextNode = List;
+    struct Node *NextNode = *List;
     uint32 NodePosition = 0;
     //uint32 ListLength = 0;
     uint32 NodeCounter = 0;
@@ -218,6 +216,12 @@ void Delete_Node(struct Node *List){
     {
         printf("ID %d not found in the linked list.\n", deleted_id);
 
+    }
+    else if(NodePosition==1)
+    {
+        *List = TempNode->NodeLink;
+        TempNode->NodeLink = NULL; /* TempNode is a free node */
+        free(TempNode);
     }
     else
     {
