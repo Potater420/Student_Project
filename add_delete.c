@@ -32,7 +32,7 @@ void print_student(struct Node *List);
 void Display_All_Nodes(struct Node *List);
 void Delete_Node(struct Node **List);
 void deleteLine( int line_number);
-
+int searchById(struct Node *List, int id);
 
 uint8 gender_str[10];
 struct Node *ListHead = NULL;
@@ -102,26 +102,42 @@ void Add_Student(struct Node **List){
     if(NULL != TempNode)
     {
         printf("Enter Student Details:\n");
-        printf("Enter id: ");
-        scanf("%d", &TempNode->id);
+        int valid_id = 0;
+        while (!valid_id)
+        {
+            printf("Enter ID: ");
+            scanf("%d", &TempNode->id);
+            int result = searchById(ListHead, TempNode->id);
+            if (result > 0)
+            {
+                printf("this ID is exist \n");
+            }
+            else
+            {
+                valid_id = 1;
+            }
 
-        //char gender_str[10];
-        int valid_gender = 0;
-        while (!valid_gender) {
-        printf("Enter gender (Male/Female): ");
-        scanf("%s", gender_str);
-
-        // مقارنة النص المدخل بالقيم الممكنة
-        if (strcmp(gender_str, "Male") == 0) {
-            TempNode->gender_type = Male;
-            valid_gender = 1;
-        } else if (strcmp(gender_str, "Female") == 0) {
-            TempNode->gender_type = Female;
-            valid_gender = 1;
-        } else {
-            printf("Invalid gender. Please enter again.\n");
         }
-    }
+        int valid_gender = 0;
+        while (!valid_gender)
+        {
+            printf("Enter gender (Male/Female): ");
+            scanf("%s", gender_str);
+            if (strcmp(gender_str, "Male") == 0)
+            {
+                TempNode->gender_type = Male;
+                valid_gender = 1;
+            }
+            else if (strcmp(gender_str, "Female") == 0)
+            {
+                TempNode->gender_type = Female;
+                valid_gender = 1;
+            }
+            else
+            {
+                printf("Invalid gender. Please enter again.\n");
+            }
+        }
         fflush(stdin);
         printf("Enter Name: ");
         gets(TempNode->name);
@@ -226,48 +242,42 @@ void Display_All_Nodes(struct Node *List)
     }
 }
 void Delete_Node(struct Node **List){
-    uint32 deleted_id=0;
     struct Node *TempNode = *List;
     struct Node *NodeListCounter = *List;
-    //uint32 NodeCount = 0;
     struct Node *NextNode = *List;
     uint32 NodePosition = 0;
-    //uint32 ListLength = 0;
     uint32 NodeCounter = 0;
+    uint32 deleted_id=0;
 
     printf("Enter the id: ");
     scanf("%i", &deleted_id);
-
-    if (TempNode == NULL)
+    int result = searchById(ListHead, deleted_id);
+    if (result == 0)
     {
-        printf("ID %d not found in the linked list.\n", deleted_id);
-
-    }
-    while(TempNode->id!=deleted_id)
-    {
-        NodeCounter++;
-        TempNode = TempNode->NodeLink;
-    }
-    NodePosition=NodeCounter+1;
-    NodeCounter = 1;
-    if(NodePosition==1)
-    {
-        *List = TempNode->NodeLink;
-        TempNode->NodeLink = NULL;
-        free(TempNode);
+        printf("Element with ID %d not found\n", deleted_id);
     }
     else
     {
-        while(NodeCounter < (NodePosition - 1))
+
+        NodePosition=result;
+        if(NodePosition==1)
         {
-            NodeCounter++;
-            NodeListCounter = NodeListCounter->NodeLink;
+            *List = TempNode->NodeLink;
+            free(TempNode);
         }
-        NextNode = NodeListCounter->NodeLink;
-        NodeListCounter->NodeLink = NextNode->NodeLink;
-        free(NextNode);
+        else
+        {
+            while(NodeCounter < (NodePosition ))
+            {
+                NodeCounter++;
+                NodeListCounter = NodeListCounter->NodeLink;
+            }
+            NextNode = NodeListCounter->NodeLink;
+            NodeListCounter->NodeLink = NextNode->NodeLink;
+            free(NextNode);
+        }
+        deleteLine( NodePosition);
     }
-    deleteLine( NodePosition);
 }
 
 void deleteLine( int line_number)
@@ -275,19 +285,7 @@ void deleteLine( int line_number)
     char *old_file_name = "test22222.txt";
     char *new_file_name = "new.txt";
     my_file = fopen(old_file_name,"r");
-    if (my_file == NULL)
-    {
-        printf("Error opening file.\n");
-        return;
-    }
-
     temp_file = fopen(new_file_name, "w");
-    if (temp_file == NULL)
-     {
-        printf("Error creating temporary file.\n");
-        fclose(my_file);
-        return;
-    }
 
     char line[1000];
     int current_line = 1;
@@ -303,11 +301,28 @@ void deleteLine( int line_number)
     fclose(temp_file);
 
    if (remove(old_file_name) != 0) {
-        printf("Error deleting file");
+       perror("Error deleting file");
     } else {
         rename(new_file_name,old_file_name);
         printf("File %s deleted successfully.\n", old_file_name);
     }
+
+}
+int searchById(struct Node *List, int id)
+{
+    struct Node* TempNode = List;
+    uint32 NodeCount = 0;
+
+    while (TempNode != NULL)
+    {
+        NodeCount++;
+        if (TempNode->id == id)
+        {
+            return  NodeCount;
+        }
+        TempNode = TempNode->NodeLink;
+    }
+    return 0;
 }
 
 
