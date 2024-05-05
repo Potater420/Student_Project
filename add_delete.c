@@ -1,18 +1,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #define MAX_STUDENTS 100
 FILE *my_file =NULL;
-
+FILE *temp_file =NULL;
 typedef unsigned int uint32;
 typedef unsigned short uint16;
 typedef unsigned char uint8;
 
+typedef enum
+{
+    Male,
+    Female
+}Gender;
+
 struct Node{
     unsigned int id;
+    Gender gender_type;
     unsigned char name[50];
     unsigned int age;
+    char password[30];
     unsigned int grade;
     struct Node *NodeLink;
 };
@@ -20,13 +27,14 @@ struct Node{
 
 void Add_Student(struct Node **List);
 uint32 Get_Length(struct Node *List);
-void read_data(struct Node **List,uint8 *read_data, int *count);
+void read_data(struct Node **List, int *count);
 void print_student(struct Node *List);
 void Display_All_Nodes(struct Node *List);
 void Delete_Node(struct Node **List);
+void deleteLine( int line_number);
 
 
-uint8 data[50];
+uint8 gender_str[10];
 struct Node *ListHead = NULL;
 
 int main()
@@ -35,18 +43,17 @@ int main()
     int count = 0;
     int linesCount = 0;
     char buffer[1000];
-
-    uint32 ListLength = 0;
-    my_file = fopen("text_fun add.txt","r");
+    //uint32 ListLength = 0;
+    my_file = fopen("test22222.txt","r");
     while (fgets(buffer, sizeof(buffer),  my_file) != NULL)
     {
         linesCount++;
     }
-    my_file = fopen("text_fun add.txt","r");
+    my_file = fopen("test22222.txt","r");
     for(int i=0;i<linesCount;i++)
     {
-        fgets(data,95,my_file);
-        read_data(&ListHead,read_data, &count);
+        //fgets(data,95,my_file);
+        read_data(&ListHead,&count);
     }
 
     printf("-> Hello to Single Linked List \n");
@@ -88,80 +95,103 @@ int main()
 }
 
 void Add_Student(struct Node **List){
-    my_file = fopen("text_fun add.txt","a");
+    my_file = fopen("test22222.txt","a");
     struct Node *TempNode = NULL;
+    struct Node *LastNode = NULL;
     TempNode = (struct Node *)malloc(sizeof(struct Node));
     if(NULL != TempNode)
     {
         printf("Enter Student Details:\n");
         printf("Enter id: ");
         scanf("%d", &TempNode->id);
+
+        //char gender_str[10];
+        int valid_gender = 0;
+        while (!valid_gender) {
+        printf("Enter gender (Male/Female): ");
+        scanf("%s", gender_str);
+
+        // مقارنة النص المدخل بالقيم الممكنة
+        if (strcmp(gender_str, "Male") == 0) {
+            TempNode->gender_type = Male;
+            valid_gender = 1;
+        } else if (strcmp(gender_str, "Female") == 0) {
+            TempNode->gender_type = Female;
+            valid_gender = 1;
+        } else {
+            printf("Invalid gender. Please enter again.\n");
+        }
+    }
+        fflush(stdin);
         printf("Enter Name: ");
-        scanf("%s", &TempNode->name);
+        gets(TempNode->name);
         printf("Enter Age: ");
         scanf("%d", &TempNode->age);
+        printf("Enter pass: ");
+        scanf("%s", &TempNode->password);
         printf("Enter grade: ");
         scanf("%d", &TempNode->grade);
 
+        TempNode->NodeLink = NULL;
         if(NULL == *List)
         {
-            TempNode->NodeLink = NULL;
             *List = TempNode;
         }
         else
         {
-            TempNode->NodeLink = *List;
-            *List = TempNode;
+            LastNode = *List;
+            while(LastNode->NodeLink != NULL)
+            {
+                LastNode = LastNode->NodeLink;
+            }
+            LastNode->NodeLink = TempNode;
         }
 
     }
     if(NULL!=my_file)
     {
-        int length_name = strlen(TempNode->name);
-        for (int i = 0; i < 50-length_name; i++)
-        {
-            strcat(TempNode->name, " ");
-        }
-        fprintf(my_file, "id: [%0*d] Name: [%s] Age: [%0*d] Grade: [%0*d]\n",4,TempNode->id
-                                                                            ,TempNode->name
-                                                                            ,3,TempNode->age
-                                                                            ,3,TempNode->grade);
+        fprintf(my_file, "%d,%s,%s,%d,%s,%d\n",TempNode->id
+                                            ,TempNode->gender_type== Male ? "Male" : "Female"
+                                            ,TempNode->name
+                                            ,TempNode->age
+                                            ,TempNode->password
+                                            ,TempNode->grade);
     }
     fclose(my_file);
 }
 
-void read_data(struct Node **List,uint8 *read_data, int *count)
+void read_data(struct Node **List, int *count)
 {
-
-    uint8 id[5]={0};
-    uint8 name[51]={0};
-    uint8 age[4]={0};
-    uint8 grade[4]={0};
-
-    strncpy(id,data+5,4);
-    strncpy(name,data+18,50);
-    strncpy(age,data+76,3);
-    strncpy(grade,data+89,3);
-
+    struct Node *LastNode = NULL;
     struct Node *TempNode = NULL;
     TempNode = (struct Node *)malloc(sizeof(struct Node));
+
+
     if(NULL != TempNode)
     {
-        TempNode->id=atoi(id);
-        strncpy(TempNode->name,name,50);
-        TempNode->age=atoi(age);
-        TempNode->grade=atoi(grade);
-
-
+        fscanf(my_file, "%d ,%[^,] ,%[^,],%d ,%[^,] ,%d \n",&TempNode->id, gender_str, TempNode->name
+                                                ,&TempNode->age, TempNode->password, &TempNode->grade);
+        if (strcmp(gender_str, "Male") == 0)
+        {
+        TempNode->gender_type = Male;
+        }
+        else if (strcmp(gender_str, "Female") == 0)
+        {
+        TempNode->gender_type = Female;
+        }
+        TempNode->NodeLink = NULL;
         if(NULL == *List)
         {
-            TempNode->NodeLink = NULL;
             *List = TempNode;
         }
         else
         {
-            TempNode->NodeLink = *List;
-            *List = TempNode;
+            LastNode = *List;
+            while(LastNode->NodeLink != NULL)
+            {
+                LastNode = LastNode->NodeLink;
+            }
+            LastNode->NodeLink = TempNode;
         }
     }
 
@@ -180,8 +210,10 @@ void Display_All_Nodes(struct Node *List)
         {
             printf("===============================\n");
             printf("id=%d\n",TempNode->id);
+            printf("gender=%s\n",TempNode->gender_type== Male ? "Male" : "Female");
             printf("name=%s\n",TempNode->name);
             printf("age=%d\n",TempNode->age);
+            printf("id=%s\n",TempNode->password);
             printf("grade=%d\n",TempNode->grade);
             printf("===============================\n");
             TempNode = TempNode->NodeLink;
@@ -205,6 +237,12 @@ void Delete_Node(struct Node **List){
 
     printf("Enter the id: ");
     scanf("%i", &deleted_id);
+
+    if (TempNode == NULL)
+    {
+        printf("ID %d not found in the linked list.\n", deleted_id);
+
+    }
     while(TempNode->id!=deleted_id)
     {
         NodeCounter++;
@@ -212,15 +250,10 @@ void Delete_Node(struct Node **List){
     }
     NodePosition=NodeCounter+1;
     NodeCounter = 1;
-    if (TempNode == NULL)
-    {
-        printf("ID %d not found in the linked list.\n", deleted_id);
-
-    }
-    else if(NodePosition==1)
+    if(NodePosition==1)
     {
         *List = TempNode->NodeLink;
-        TempNode->NodeLink = NULL; /* TempNode is a free node */
+        TempNode->NodeLink = NULL;
         free(TempNode);
     }
     else
@@ -234,7 +267,49 @@ void Delete_Node(struct Node **List){
         NodeListCounter->NodeLink = NextNode->NodeLink;
         free(NextNode);
     }
+    deleteLine( NodePosition);
 }
+
+void deleteLine( int line_number)
+{
+    char *old_file_name = "test22222.txt";
+    char *new_file_name = "new.txt";
+    my_file = fopen(old_file_name,"r");
+    if (my_file == NULL)
+    {
+        printf("Error opening file.\n");
+        return;
+    }
+
+    temp_file = fopen(new_file_name, "w");
+    if (temp_file == NULL)
+     {
+        printf("Error creating temporary file.\n");
+        fclose(my_file);
+        return;
+    }
+
+    char line[1000];
+    int current_line = 1;
+    while (fgets(line, sizeof(line), my_file) != NULL)
+    {
+        if (current_line != line_number)
+        {
+            fputs(line, temp_file);
+        }
+        current_line++;
+    }
+    fclose(my_file);
+    fclose(temp_file);
+
+   if (remove(old_file_name) != 0) {
+        printf("Error deleting file");
+    } else {
+        rename(new_file_name,old_file_name);
+        printf("File %s deleted successfully.\n", old_file_name);
+    }
+}
+
 
 
 
