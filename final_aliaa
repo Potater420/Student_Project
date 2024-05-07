@@ -20,7 +20,7 @@ struct Node{
     uint8 name[50];
     uint32 age;
     uint8 password[30];
-    uint32 grades[MAX_SUBJECTS];
+    uint32 grade;
     struct Node *NodeLink;
 };
 
@@ -32,6 +32,7 @@ void Delete_Node(struct Node **List);
 void deleteLine( int line_number);
 int student_record(struct Node *List);
 int searchById(struct Node *List, int id);
+void Edit_Student(struct Node *List);
 
 uint8 gender_str[10];
 struct Node *ListHead = NULL;
@@ -47,7 +48,6 @@ int main()
     {
         linesCount++;
     }
-    printf("%d",linesCount);
     rewind(my_file);
     for(int i=0;i<linesCount;i++)
     {
@@ -64,6 +64,7 @@ int main()
         printf("-> 3) View student record \n");
         printf("-> 4) Remove student record \n");
         printf("-> 5) Quit from application \n");
+        printf("-> 6) Edit student records \n");
         printf("===============================\n\n");
         printf("UserChoice : ");
         scanf("%i", &UserChoice);
@@ -84,6 +85,9 @@ int main()
             case 5:
                 printf("Quit from application \n");
                 exit(1);
+            break;
+            case 6:
+                Edit_Student(ListHead);
             break;
             default:
                 printf("User Choice out of range !!\n");
@@ -111,7 +115,7 @@ void Add_Student(struct Node **List)
             int result = searchById(ListHead, TempNode->id);
             if (result > 0)
             {
-                printf("this ID is exist \n");
+                printf("this ID is exist . Please enter again.\n");
             }
             else
             {
@@ -143,11 +147,21 @@ void Add_Student(struct Node **List)
         gets(TempNode->name);
         printf("Enter Age: ");
         scanf("%d", &TempNode->age);
-        printf("Enter pass: ");
+        printf("Enter password: ");
         scanf("%s", &TempNode->password);
-        for (int i = 0; i < MAX_SUBJECTS; i++) {
-            printf("Enter grade for Subject %d: ", i + 1);
-            scanf("%d", &TempNode->grades[i]);
+        int valid_grade = 0;
+        while (!valid_grade)
+        {
+            printf("Enter grade: ");
+            scanf("%d", &TempNode->grade);
+            if((TempNode->grade)>0 && (TempNode->grade)<100)
+            {
+                valid_grade = 1;
+            }
+            else
+            {
+                printf("invalid grade . Please enter again.\n");
+            }
         }
         TempNode->NodeLink = NULL;
         if(NULL == *List)
@@ -167,16 +181,12 @@ void Add_Student(struct Node **List)
     }
     if(NULL!=my_file)
     {
-        fprintf(my_file, "%d,%s,%s,%d,%s,%d,%d,%d,%d,%d\n",TempNode->id
+        fprintf(my_file, "%d,%s,%s,%d,%s,%d\n",TempNode->id
                                             ,TempNode->gender_type== Male ? "Male" : "Female"
                                             ,TempNode->name
                                             ,TempNode->age
                                             ,TempNode->password
-                                            ,TempNode->grades[0]
-                                            ,TempNode->grades[1]
-                                            ,TempNode->grades[2]
-                                            ,TempNode->grades[3]
-                                            ,TempNode->grades[4]);
+                                            ,TempNode->grade);
     }
     fclose(my_file);
 }
@@ -190,10 +200,9 @@ void read_data(struct Node **List, int *count)
 
     if(NULL != TempNode)
     {
-        fscanf(my_file, "%d ,%[^,] ,%[^,],%d ,%[^,] ,%d ,%d ,%d ,%d ,%d \n",&TempNode->id, gender_str, TempNode->name
-                                                ,&TempNode->age, TempNode->password, &TempNode->grades[0]
-                                                , &TempNode->grades[1], &TempNode->grades[2]
-                                                , &TempNode->grades[3], &TempNode->grades[4]);
+        fscanf(my_file, "%d ,%[^,] ,%[^,],%d ,%[^,] ,%d \n",&TempNode->id, gender_str, TempNode->name
+                                                ,&TempNode->age, TempNode->password, &TempNode->grade);
+
         if (strcmp(gender_str, "Male") == 0)
         {
         TempNode->gender_type = Male;
@@ -238,10 +247,7 @@ void print_student(struct Node *List)
             printf("name=%s\n",TempNode->name);
             printf("age=%d\n",TempNode->age);
             printf("id=%s\n",TempNode->password);
-            for (int i = 0; i < MAX_SUBJECTS; i++)
-            {
-                printf("the grade of Subject %d=%d\n", i + 1,TempNode->grades[i]);
-            }
+            printf("grade=%d\n",TempNode->grade);
             printf("===============================\n");
             TempNode = TempNode->NodeLink;
         }
@@ -329,25 +335,22 @@ int student_record(struct Node *List)
 {
     int id=0;
     int found = 0;
+    struct Node* TempNode = List;
     printf("Enter the id: ");
     scanf("%i", &id);
-    struct Node* TempNode = List;
-    while (TempNode != NULL)
+     while (TempNode != NULL)
     {
         if (TempNode->id == id)
         {
+            found = 1;
             printf("===============================\n");
             printf("id=%d\n",TempNode->id);
             printf("gender=%s\n",TempNode->gender_type== Male ? "Male" : "Female");
             printf("name=%s\n",TempNode->name);
             printf("age=%d\n",TempNode->age);
-            printf("password=%s\n",TempNode->password);
-            for (int i = 0; i < MAX_SUBJECTS; i++)
-            {
-                printf("the grade of Subject %d=%d\n", i + 1,TempNode->grades[i]);
-            }
+            printf("id=%s\n",TempNode->password);
+            printf("grade=%d\n",TempNode->grade);
             printf("===============================\n");
-            found = 1;
         }
         TempNode = TempNode->NodeLink;
     }
@@ -357,6 +360,25 @@ int student_record(struct Node *List)
     }
 
 }
-
-
-
+void Edit_Student(struct Node *List)
+{
+    struct Node* TempNode = List;
+    int id;
+    int found = 0;
+    printf("Enter student id:");
+    scanf("%d",&id);
+    while (TempNode != NULL)
+    {
+        if (TempNode->id == id)
+        {
+            found = 1;
+            printf("Enter the new grade: ");
+            scanf("%d", &TempNode->grade);
+        }
+        TempNode = TempNode->NodeLink;
+    }
+     if (!found)
+    {
+        printf("Student with ID %d not found\n", id);
+    }
+}
